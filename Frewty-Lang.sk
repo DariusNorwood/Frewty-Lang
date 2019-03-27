@@ -1,0 +1,1073 @@
+options:
+	watermark: &3[&bFREWTY LANG&3] &4-&7
+	version: V1.3.9
+on load:
+	clear {effects::*}
+	clear {events::*}
+	clear {Execution order::*}
+	#TEMP
+	loop {strings::*}:
+		deletestring(loop-value)
+	loop {integers::*}:
+		loop {uuidplrnames::*}:
+			deleteuuidint(loop-value-1, loop-value-2)
+		deleteint(loop-value)
+	clear {integers::*}
+	clear {strings::*}
+	set {TerminateEvent} to false
+	#TEMP
+	createeffect("+ ")
+	createeffect("w8 ")
+	createeffect("give ")
+	createeffect("g ")
+	createeffect("wait ")
+	createeffect("- ")
+	createeffect("= ")
+	createeffect("u ")
+	createeffect("broadcast ")
+	createeffect("tp plr ")
+	createeffect("cool effect man")
+	createexpression("plr")
+	#createexpression("uuid")
+	createexpression("victim")
+	createexpression("attacker")
+	createexpression("msg")
+	createevent("chat")
+	createevent("die")
+	createevent("/")
+	createevent("load")
+	createevent("damage")
+	createevent("dmg")
+	createevent("join")
+	createevent("left click")
+	createevent("right click")
+	if dir "plugins/FrewtyLang/scripts" doesn't exist:
+		create dir "plugins/FrewtyLang/scripts"
+	broadcast "{@watermark} &c""{@version}"" &8IS RUNNING"
+function reload(filename: text):
+	set {waiting} to false
+	clear {lines::*}
+	set {linescount} to line count of file "plugins/FrewtyLang/scripts/%{_filename}%.txt"
+	loop {linescount} times:
+		set {_linecontent} to line loop-num in file "plugins/FrewtyLang/scripts/%{_filename}%.txt"
+		add {_linecontent} to {lines::*}
+		broadcast "{@watermark} Loaded line &8%loop-num%&7>&d'&5%{_linecontent}%&d'"
+	loop {linescount} times:
+		if {eventline} = 0:
+			variablefunction({lines::%loop-num%})
+			#set {lines::%loop-num%::bool} to true
+			# if {lines::%loop-num-1%} starts with "!":
+			# stop
+	read("load","","","")
+function createexpression(expressionname: text):
+	add {_expressionname} to {expressions::*}
+function createevent(eventname: text):
+	add {_eventname} to {events::*}
+function createeffect(effectname: text):
+	add {_effectname} to {effects::*}
+function createint(intname: text , intval: integer ):
+	set {int-%{_intname}%} to {_intval}
+function deleteint(intname: text):
+	delete {int-%{_intname}%}
+function deletestring(strname: text):
+	delete {str-%{_strname}%}
+function createstring(strname: text, strval: text):
+	set {str-%{_strname}%} to {_strval}
+function createuuidint(varname: text, varval: number, plr: player):
+	set {_uuid} to uuid of {_plr}
+	set {uint-%{_varname}%::%{_uuid}%} to {_varval}
+	add {_varname} to {integers::*}
+	add {_plr} to {uuidplrnames::*}
+function deleteuuidint(varname: text, plr: player):
+	set {_uuid} to uuid of {_plr}
+	delete {uint-%{_varname}%::%{_uuid}%}
+	
+function read(eventname: text,arg1: text,arg2: text,cmdargs: text):
+	loop {linescount} times:
+		replace "	" in {lines::%loop-num-1%} with ""
+		set {lines::%loop-num%::bool} to true
+			
+	set {eventline} to 0
+	set {eventend} to 0
+	set {waiting} to false
+	loop {linescount} times:
+		if {waiting} = true:
+			loop {waittime} times:
+				wait 1 tick
+			set {waiting} to false
+		if {lines::%loop-num%} starts with "? ":
+			condition({lines::%loop-num%},loop-num,{_arg1},{_arg2})
+			#broadcast "%loop-num% %{lines::%loop-num%::bool}%"
+		if {eventline} != 0:
+			if {lines::%loop-num%} starts with "X":
+				stop
+			if {lines::%loop-num-1%} starts with "CE":# or "TERMINATE" or "Terminate" or "terminate" or "CancelEvent" or "cancelEvent" or "Cancelevent" or "CANCELEVENT" or "CANCEL EVENT" or "Cancel Event" or "cancel Event" or "cancel event" or "Cancel event":
+				if loop-num-1 > {eventline}:
+					set {TerminateEvent} to true
+		#broadcast "%loop-num% %{_cmdargs}%"
+		if {lines::%loop-num%} starts with "_":
+			continue
+		loop {events::*}:
+			#broadcast "test"
+			if {_eventname} is "/":
+				#broadcast "test1"
+				if {lines::%loop-num-1%} starts with "/":
+					#broadcast "test2"
+					set {_cmd} to {lines::%loop-num-1%}
+					replace "/" in {_cmd} with ""
+					set {_cmdAndArgs::*} to {_cmd} split at " "
+					set {_CheckCmd} to cmds({_cmdAndArgs::1},"%{_cmdargs}%",({_arg1} parsed as a player),{_arg2},{_cmd},{_cmdargs})
+					set {Current Event} to {_eventname}
+					if {_CheckCmd} = true:
+						set {eventline} to loop-num-1
+					else:
+						continue
+				
+				exit 1 loop
+			else if {lines::%loop-num-1%} starts with "%{_eventname}%:":
+				#broadcast "this is %{_eventname}%:"
+				set {Current Event} to {_eventname}
+				set {eventline} to loop-num-1
+					
+				exit 1 loop
+				
+		if {eventline} != 0:
+			loop {events::*}:
+				if {lines::%loop-num-1%} starts with "!":
+					if loop-num-1 > {eventline}:
+						set {eventline} to 0
+						# if {Current Event} = "/":
+						# set {cmd executed} to true
+						stop
+							
+				if {lines::%loop-num-1%} does not contain loop-value-2:
+					loop {effects::*}:
+					#broadcast {effects::%loop-index%}
+						if {lines::%loop-num-1%} starts with "%{effects::%loop-index-1%}%":
+							if loop-num-1 >= {eventline}:
+								if {lines::%loop-num%::bool} = true:
+									
+									effectfunction({effects::%loop-index-1%},{lines::%loop-num-1%},{_arg1},{_arg2})
+								exit 1 loop
+function cmds(main: text,cmdarg: text,plr: player,cmd: text,ocmd: text,cmdargs: text) :: boolean:
+	replace every " !" in {_cmdarg} with ""
+	replace every "!" in {_cmdarg} with ""
+	replace every " <none>" in {_cmdarg} with ""
+	replace every "<none>" in {_cmdarg} with ""
+	#broadcast {_cmdarg}
+	#broadcast {_cmdargs}
+	if {_cmd} = {_main}:
+		if {_cmdargs} is not set:
+			set {_cmdargs} to ""
+		if {_cmdarg} is not set:
+			set {_cmdarg} to ""
+		if {_cmdarg} != "":
+			if {_cmdarg} = {_cmdargs}:
+				set {cmd executed} to true
+				return true
+			else:
+				return false
+		else if {_cmdarg} = "":
+			if {_cmdarg} = {_cmdargs}:
+				set {cmd executed} to true
+				return true
+command /fl [<text>] [<text>]:
+	permission: fl
+	trigger:
+		if arg-1 is not set:
+			broadcast "{@watermark}"
+			broadcast " &1/fl &c[1<reload/r/load/l>,2<debug/d>]"
+			broadcast "      &c[1<script name>,2<event/events>]"
+			broadcast "&4&lONLY USE DEBUG IF YOU KNOW WHAT YOU ARE DOING"
+		if arg-1 = "reload" or "r" or "load" or "l":
+			if file "plugins/FrewtyLang/scripts/%arg-2%.txt" exists:
+				broadcast "{@watermark} &4RELOADING -%arg-2%-"
+				reload(arg-2)
+		if arg-1 = "debug" or "d":
+			if arg-2 = "events" or "event":
+				broadcast "{@watermark} &4EVENTS:&7 %{events::*}%"
+			if arg-2 = "bools" or "bool" or "booleans" or "boolean":
+				loop {linescount} times:
+					broadcast "{@watermark} &4BOOLEANS [Line(%loop-num%)]:&7 %{lines::%loop-num%::bool}%"
+			if arg-2 = "int" or "integer" or "ints" or "integers":
+				broadcast "{@watermark} &4INTEGERS:&7 %{integers::*}%"
+			if arg-2 = "uuidplrs":
+				broadcast "{@watermark} &4UUID PLAYER NAMES:&7 %{uuidplrnames::*}%"
+			
+#startfold IF STATEMENTS
+function condition(line: string,linenum: number,arg1: text,arg2: text):
+
+	#method 1
+	if {lines::%{_linenum}%::bool} is true:
+		set {_statement} to {_line}
+		replace "? " in {_statement} with ""
+		replace " " in {_statement} with ""
+		if {_statement} contains "=":
+			set {_vars::*} to {_statement} split at "="
+			loop {strings::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if {str-%{_vars::1}%} = {str-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if {str-%{_vars::1}%} != {str-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+		else if {_statement} contains "!":
+			set {_vars::*} to {_statement} split at "!"
+			loop {strings::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if {str-%{_vars::1}%} != {str-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if {str-%{_vars::1}%} = {str-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+			#integers if
+			loop {integers::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if ({_vars::1} parsed as a number) = {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if ({_vars::1} parsed as a number) != {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+									
+							#set {lines::%{_linenum}%::bool} to false
+				else if {_vars::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::1} is loop-value:
+						if ({_vars::2} parsed as a number) = {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+						else if ({_vars::2} parsed as a number) != {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+				else if {int-%{_vars::2}%} = {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								set {lines::%loop-num%::bool} to true
+								add 1 to {ifskips}
+							if {ifskips} > 0:
+								if {lines::%loop-num%} starts with "?!":
+									subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to true
+								else if {lines::%loop-num%} does not start with "? ":
+									set {lines::%loop-num%::bool} to true
+							if {ifskips} = 0:
+								if {lines::%loop-num%} starts with "?!":
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+				else if {int-%{_vars::2}%} != {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								add 1 to {ifskips}
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} > 0:
+									subtract 1 from {ifskips}
+							set {lines::%loop-num%::bool} to false
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} = 0:
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+		else if {_statement} contains ">":
+			set {_vars::*} to {_statement} split at ">"
+			loop {integers::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if ({_vars::1} parsed as a number) > {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if ({_vars::1} parsed as a number) <= {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+									
+							#set {lines::%{_linenum}%::bool} to false
+				else if {_vars::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::1} is loop-value:
+						if ({_vars::2} parsed as a number) < {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+						else if ({_vars::2} parsed as a number) >= {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+				else if {int-%{_vars::2}%} > {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								set {lines::%loop-num%::bool} to true
+								add 1 to {ifskips}
+							if {ifskips} > 0:
+								if {lines::%loop-num%} starts with "?!":
+									subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to true
+								else if {lines::%loop-num%} does not start with "? ":
+									set {lines::%loop-num%::bool} to true
+							if {ifskips} = 0:
+								if {lines::%loop-num%} starts with "?!":
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+				else if {int-%{_vars::2}%} <= {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								add 1 to {ifskips}
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} > 0:
+									subtract 1 from {ifskips}
+							set {lines::%loop-num%::bool} to false
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} = 0:
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+		else if {_statement} contains "<":
+			set {_vars::*} to {_statement} split at "<"
+			loop {integers::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if ({_vars::1} parsed as a number) < {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if ({_vars::1} parsed as a number) >= {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+									
+							#set {lines::%{_linenum}%::bool} to false
+				else if {_vars::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::1} is loop-value:
+						if ({_vars::2} parsed as a number) > {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+						else if ({_vars::2} parsed as a number) <= {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+				else if {int-%{_vars::2}%} < {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								set {lines::%loop-num%::bool} to true
+								add 1 to {ifskips}
+							if {ifskips} > 0:
+								if {lines::%loop-num%} starts with "?!":
+									subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to true
+								else if {lines::%loop-num%} does not start with "? ":
+									set {lines::%loop-num%::bool} to true
+							if {ifskips} = 0:
+								if {lines::%loop-num%} starts with "?!":
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+				else if {int-%{_vars::2}%} >= {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								add 1 to {ifskips}
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} > 0:
+									subtract 1 from {ifskips}
+							set {lines::%loop-num%::bool} to false
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} = 0:
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+		else if {_statement} contains "!":
+			set {_vars::*} to {_statement} split at "!"
+			loop {integers::*}:
+				if {_vars::1} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::2} = loop-value:
+						if ({_vars::1} parsed as a number) != {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+										#broadcast "true"
+								#set {lines::%{_linenum}%::bool} to true
+						else if ({_vars::1} parsed as a number) = {int-%{_vars::2}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+									
+							#set {lines::%{_linenum}%::bool} to false
+				else if {_vars::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					if {_vars::1} is loop-value:
+						if ({_vars::2} parsed as a number) != {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										set {lines::%loop-num%::bool} to true
+										add 1 to {ifskips}
+									if {ifskips} > 0:
+										if {lines::%loop-num%} starts with "?!":
+											subtract 1 from {ifskips}
+											set {lines::%loop-num%::bool} to true
+										else if {lines::%loop-num%} does not start with "? ":
+											set {lines::%loop-num%::bool} to true
+									if {ifskips} = 0:
+										if {lines::%loop-num%} starts with "?!":
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+						else if ({_vars::2} parsed as a number) = {int-%{_vars::1}%}:
+							set {ifskips} to 0
+							loop {linescount} times:
+								if {_linenum} < loop-num:
+									if {lines::%loop-num%} starts with "? ":
+										add 1 to {ifskips}
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} > 0:
+											subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to false
+									if {lines::%loop-num%} starts with "?!":
+										if {ifskips} = 0:
+											set {lines::%loop-num%::bool} to true
+											exit 2 loops
+				else if {int-%{_vars::2}%} != {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								set {lines::%loop-num%::bool} to true
+								add 1 to {ifskips}
+							if {ifskips} > 0:
+								if {lines::%loop-num%} starts with "?!":
+									subtract 1 from {ifskips}
+									set {lines::%loop-num%::bool} to true
+								else if {lines::%loop-num%} does not start with "? ":
+									set {lines::%loop-num%::bool} to true
+							if {ifskips} = 0:
+								if {lines::%loop-num%} starts with "?!":
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+				else if {int-%{_vars::2}%} = {int-%{_vars::1}%}:
+					set {ifskips} to 0
+					loop {linescount} times:
+						if {_linenum} < loop-num:
+							if {lines::%loop-num%} starts with "? ":
+								add 1 to {ifskips}
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} > 0:
+									subtract 1 from {ifskips}
+							set {lines::%loop-num%::bool} to false
+							if {lines::%loop-num%} starts with "?!":
+								if {ifskips} = 0:
+									set {lines::%loop-num%::bool} to true
+									exit 2 loops
+#endfold
+#EFFECT FUNCTION
+function effectfunction(effectname: text,line: text,arg1: text,arg2: text):
+	if {_effectname} is "broadcast ":
+		set {_message} to {_line}
+		set {_colored chat::*} to {_message} split at " "
+		if {_colored chat::2} is "colored" or "clrd" or "color" or "clr":
+			if {_line} contains "~i@":
+				loop {_colored chat::*}:
+					loop {integers::*}:
+						if {_message} contains "~i@%loop-value-2%~":
+							replace "~i@%loop-value-2%~" in {_message} with "%{int-%loop-value-2%}%"
+					replace "%{_colored chat::2}% " in {_message} with ""
+					replace {_effectname} in {_message} with ""
+					loop {expressions::*}:
+						if loop-value-2 is "plr" or "victim":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg1}
+						if loop-value-2 is "msg" or "attacker":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg2}
+				#broadcast colored {_message}
+			if {_line} contains "~i@":
+				loop {_colored chat::*}:
+					loop {integers::*}:
+						if {_message} contains "~i@%loop-value-2%~":
+							replace "~i@%loop-value-2%~" in {_message} with "%{int-%loop-value-2%}%"
+						if {_message} contains "~i@plr@%loop-value-2%~":
+							set {_plr} to {_arg1}
+							set {_uuidplr} to uuid of ({_arg1} parsed as a player)
+							replace "~i@plr@%loop-value-2%~" in {_message} with "%{uint-%loop-value-2%::%{_uuidplr}%}%"
+							
+						if {_message} contains "~i@victim@%loop-value-2%~":
+							set {_plr} to {_arg1}
+							set {_uuidplr} to uuid of {_arg1}
+							replace "~i@victim@%loop-value-2%~" in {_message} with "%{uint-%loop-value-2%::%{_uuidplr}%}%"
+						if {_message} contains "~i@attacker@%loop-value-2%~":
+							set {_plr} to {_arg2}
+							set {_uuidplr} to uuid of {_arg2}
+							replace "~i@attacker@%loop-value-2%~" in {_message} with "%{uint-%loop-value-2%::%{_uuidplr}%}%"
+					replace "%{_colored chat::2}% " in {_message} with ""
+					replace {_effectname} in {_message} with ""
+					loop {expressions::*}:
+						if loop-value-2 is "plr" or "victim":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg1}
+						if loop-value-2 is "msg" or "attacker":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg2}
+			if {_line} contains "~s@":
+				loop {_colored chat::*}:
+					loop {strings::*}:
+						if {_message} contains "~s@%loop-value-2%~":
+							replace "~s@%loop-value-2%~" in {_message} with "%{str-%loop-value-2%}%"
+					replace "%{_colored chat::2}% " in {_message} with ""
+					replace {_effectname} in {_message} with ""
+					loop {expressions::*}:
+						if loop-value-2 is "plr" or "victim":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg1}
+						if loop-value-2 is "msg" or "attacker":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg2}
+				broadcast colored {_message}
+			else:
+				replace "%{_colored chat::2}% " in {_message} with ""
+				replace {_effectname} in {_message} with ""
+				loop {integers::*}:
+					if {_message} contains "~i@%loop-value%~":
+						replace "~i@%loop-value%~" in {_message} with "%{int-%loop-value%}%"
+					if {_message} contains "~i@plr@%loop-value%~" or "~i@victim@%loop-value%~":
+						set {_plr} to {_arg1}
+						set {_uuidplr} to uuid of {_arg1}
+						replace "~i@plr@%loop-value%~" in {_message} with "%{uint-%loop-value%::%{_uuidplr}%}%"
+						replace "~i@victim@%loop-value%~" in {_message} with "%{uint-%loop-value%::%{_uuidplr}%}%"
+					if {_message} contains "~i@attacker@%loop-value%~" or "~i@attacker@%loop-value%~":
+						set {_plr} to {_arg2}
+						set {_uuidplr} to uuid of {_arg2}
+						replace "~i@attacker@%loop-value%~" in {_message} with "%{uint-%loop-value%::%{_uuidplr}%}%"
+				loop {expressions::*}:
+					if loop-value is "plr" or "victim":
+						if {_message} contains "~%loop-value%~":
+							replace "~%loop-value%~" in {_message} with {_arg1}
+					if loop-value is "msg" or "attacker":
+						if {_message} contains "~%loop-value%~":
+							replace "~%loop-value%~" in {_message} with {_arg2}
+				broadcast colored {_message}
+		else if {_colored chat::2} is not "colored" or "clrd" or "color" or "clr":
+			if {_line} contains "~i@":
+				loop {_colored chat::*}:
+					replace {_effectname} in {_message} with ""
+					loop {integers::*}:
+						if {_message} contains "~i@%loop-value-2%~":
+							replace "~i@%loop-value-2%~" in {_message} with "%{int-%loop-value-2%}%"
+						if {_message} contains "~i@plr@%loop-value-2%~":
+							set {_plr} to {_arg1}
+							set {_uuidplr} to uuid of {_arg1}
+							replace "~i@plr@%loop-value-2%~" in {_message} with "%{uint-%loop-value-2%::%{_uuidplr}%}%"
+					loop {expressions::*}:
+						if loop-value-2 is "plr" or "victim":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg1}
+						if loop-value-2 is "msg" or "attacker":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg2}
+				#broadcast {_message}
+			if {_line} contains "~s@":
+				loop {_colored chat::*}:
+					replace {_effectname} in {_message} with ""
+					loop {strings::*}:
+						if {_message} contains "~s@%loop-value-2%~":
+							replace "~s@%loop-value-2%~" in {_message} with "%{str-%loop-value-2%}%"
+					loop {expressions::*}:
+						if loop-value-2 is "plr" or "victim":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg1}
+						if loop-value-2 is "msg" or "attacker":
+							if {_message} contains "~%loop-value-2%~":
+								replace "~%loop-value-2%~" in {_message} with {_arg2}
+				broadcast {_message}
+			else:
+				replace {_effectname} in {_message} with ""
+				loop {integers::*}:
+					if {_message} contains "~i@%loop-value%~":
+						replace "~i@%loop-value%~" in {_message} with "%{int-%loop-value%}%"
+					if {_message} contains "~i@plr@%loop-value-2%~":
+						set {_plr} to {_arg1}
+						set {_uuidplr} to uuid of {_arg1}
+						replace "~i@plr@%loop-value-2%~" in {_message} with "%{uint-%loop-value-2%::%{_uuidplr}%}%"
+				loop {strings::*}:
+					if {_message} contains "~s@%loop-value%~":
+						replace "~s@%loop-value%~" in {_message} with "%{str-%loop-value%}%"
+				loop {expressions::*}:
+					if loop-value is "plr" or "victim":
+						if {_message} contains "~%loop-value%~":
+							replace "~%loop-value%~" in {_message} with {_arg1}
+					if loop-value is "msg" or "attacker":
+						if {_message} contains "~%loop-value%~":
+							replace "~%loop-value%~" in {_message} with {_arg2}
+				broadcast {_message}
+				#exit 1 loops
+			
+	else if {_effectname} is "tp plr ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_tppositions::*} to {_message} split at " "
+		loop {_tppositions::*}:
+			loop {expressions::*}:
+				if {_tppositions::%loop-index-1%} contains "~%loop-value-2%~":
+					replace "~%loop-value-2%~" in {_tppositions::%loop-index-1%} with {_arg1}
+		teleport ({_tppositions::1} parsed as a player) to ({_tppositions::2} parsed as a player)
+		#broadcast "&3%{_tppositions::1}%%{_tppositions::2}%"
+	else if {_effectname} is "+ ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_added numbers::*} to {_message} split at " "
+		if {_message} does not contain "@":
+			if {_added numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+				add ({_added numbers::2} parsed as a number) to {int-%{_added numbers::1}%}
+			else:
+				add {int-%{_added numbers::2}%} to {int-%{_added numbers::1}%}
+		#uuid
+		else if {_added numbers::1} contains "@":
+			set {_uuid a1} to uuid of ({_arg1} parsed as a player)
+			set {_uuid a2} to uuid of ({_arg2} parsed as a player)
+			if {_added numbers::1} contains "@plr":
+				set {_varparts::*} to {_added numbers::1} split at "@"
+				set {_varparts2::*} to {_added numbers::2} split at "@"
+				if {_added numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					add ({_added numbers::2} parsed as a number) to {uint-%{_varparts::1}%::%{_uuid a1}%}
+					
+				else:
+					if {_varparts2::2} contains "attacker":
+						add {uint-%{_varparts2::1}%::%{_uuid a2}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+						
+					else if {_varparts2::2} contains "victim" or "plr":
+						add {uint-%{_varparts2::1}%::%{_uuid a1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+						
+			else if {_added numbers::1} contains "@attacker":
+				set {_varparts::*} to {_added numbers::1} split at "@"
+				set {_varparts2::*} to {_added numbers::2} split at "@"
+				if {_added numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					add ({_added numbers::2} parsed as a number) to {uint-%{_varparts::1}%::%{_uuid a2}%}
+				else:
+					if {_varparts2::2} contains "attacker":
+						add {uint-%{_varparts2::1}%::%{_uuid a2}%} to {uint-%{_varparts::1}%::%{_uuid a2}%}
+					else if {_varparts2::2} contains "victim" or "plr":
+						add {uint-%{_varparts2::1}%::%{_uuid a1}%} to {uint-%{_varparts::1}%::%{_uuid a2}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a2}%}
+						
+			else if {_added numbers::1} contains "@victim":
+				set {_varparts::*} to {_added numbers::1} split at "@"
+				set {_varparts2::*} to {_added numbers::2} split at "@"
+				
+				if {_added numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					add ({_added numbers::2} parsed as a number) to {uint-%{_varparts::1}%::%{_uuid a1}%}
+				else:
+					if {_varparts2::2} contains "attacker":
+						add {uint-%{_varparts2::1}%::%{_uuid a2}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else if {_varparts2::2} contains "victim" or "plr":
+						add {uint-%{_varparts2::1}%::%{_uuid a1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+	else if {_effectname} is "- ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_sub numbers::*} to {_message} split at " "
+		if {_message} does not contain "@":
+			if {_sub numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+				subtract ({_sub numbers::2} parsed as a number) from {int-%{_sub numbers::1}%}
+			else:
+				subtract {int-%{_sub numbers::2}%} from {int-%{_sub numbers::1}%}
+		#uuid
+		else if {_sub numbers::1} contains "@":
+			set {_uuid a1} to uuid of ({_arg1} parsed as a player)
+			set {_uuid a2} to uuid of ({_arg2} parsed as a player)
+			#broadcast {_arg1}
+			if {_sub numbers::1} contains "@plr":
+				set {_varparts::*} to {_sub numbers::1} split at "@"
+				set {_varparts2::*} to {_sub numbers::2} split at "@"
+				if {_sub numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					subtract ({_sub numbers::2} parsed as a number) from {uint-%{_varparts::1}%::%{_uuid a1}%}
+					
+				else:
+					if {_varparts2::2} contains "attacker":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a2}%} from {uint-%{_varparts::1}%::%{_uuid a1}%}
+						
+					else if {_varparts2::2} contains "victim" or "plr":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a1}%} from {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+						
+			else if {_sub numbers::1} contains "@attacker":
+				set {_varparts::*} to {_sub numbers::1} split at "@"
+				set {_varparts2::*} to {_sub numbers::2} split at "@"
+				if {_sub numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					subtract ({_sub numbers::2} parsed as a number) from {uint-%{_varparts::1}%::%{_uuid a2}%}
+				else:
+					if {_varparts2::2} contains "attacker":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a2}%} from {uint-%{_varparts::1}%::%{_uuid a2}%}
+					else if {_varparts2::2} contains "victim" or "plr":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a1}%} from {uint-%{_varparts::1}%::%{_uuid a2}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+						
+			else if {_sub numbers::1} contains "@victim":
+				set {_varparts::*} to {_sub numbers::1} split at "@"
+				set {_varparts2::*} to {_sub numbers::2} split at "@"
+				if {_sub numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+					subtract ({_sub numbers::2} parsed as a number) from {uint-%{_varparts::1}%::%{_uuid a1}%}
+				else:
+					if {_varparts2::2} contains "attacker":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a2}%} from {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else if {_varparts2::2} contains "victim" or "plr":
+						subtract {uint-%{_varparts2::1}%::%{_uuid a1}%} from {uint-%{_varparts::1}%::%{_uuid a1}%}
+					else:
+						add {int-%{_varparts2::1}%} to {uint-%{_varparts::1}%::%{_uuid a1}%}
+	else if {_effectname} is "u " or "uwu ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_uuidparams::*} to {_message} split at " "
+		loop {expressions::*}:
+			if loop-value is "plr":
+				if {_uuidparams::2} contains "~%loop-value%~":
+					replace "~%loop-value%~" in {_uuidparams::2} with {_arg1}
+			if loop-value is "victim":
+				if {_uuidparams::2} contains "~%loop-value%~":
+					replace "~%loop-value%~" in {_uuidparams::2} with {_arg1}
+			if loop-value is "attacker":
+				if {_uuidparams::2} contains "~%loop-value%~":
+					replace "~%loop-value%~" in {_uuidparams::2} with {_arg2}
+		createuuidint({_uuidparams::1},({_uuidparams::3} parsed as a number),({_uuidparams::2} parsed as a player))
+	else if {_effectname} is "= ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_subtracted numbers::*} to {_message} split at " "
+		if {_subtracted numbers::2} contains "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+			set {int-%{_subtracted numbers::1}%} to ({_subtracted numbers::2} parsed as a number)
+		else:
+			set {int-%{_subtracted numbers::1}%} to {int-%{_subtracted numbers::2}%}
+	else if {_effectname} is "w8 " or "wait ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {waiting} to true
+		set {waittime} to ({_message} parsed as a number)
+	else if {_effectname} is "g " or "give ":
+		set {_message} to {_line}
+		replace {_effectname} in {_message} with ""
+		set {_msg::*} to {_message} split at """"
+		set {_giveparams::*} to {_msg::1} split at " "
+		loop {_giveparams::*}:
+			loop {expressions::*}:
+				if {_giveparams::%loop-index-1%} contains "~%loop-value-2%~":
+					replace "~%loop-value-2%~" in {_giveparams::%loop-index-1%} with {_arg1}
+			loop {strings::*}:
+				if {_giveparams::%loop-index-1%} contains "~s@%loop-value-2%~":
+					replace "~s@%loop-value-2%~" in {_giveparams::%loop-index-1%} with {str-%loop-value-2%}
+			loop {integers::*}:
+				if {_giveparams::%loop-index-1%} contains "~i@%loop-value-2%~":
+					replace "~i@%loop-value-2%~" in {_giveparams::%loop-index-1%} with {int-%loop-value-2%}
+		loop {_msg::*}:
+			loop {expressions::*}:
+				if {_msg::2} contains "~%loop-value-2%~":
+					replace "~%loop-value-2%~" in {_msg::2} with {_arg1}
+				if {_msg::4} contains "~%loop-value-2%~":
+					replace "~%loop-value-2%~" in {_msg::4} with {_arg1}
+			loop {strings::*}:
+				if {_msg::2} contains "~s@%loop-value-2%~":
+					replace "~s@%loop-value-2%~" in {_msg::2} with {str-%loop-value-2%}
+				if {_msg::4} contains "~s@%loop-value-2%~":
+					replace "~s@%loop-value-2%~" in {_msg::4} with {str-%loop-value-2%}
+			loop {integers::*}:
+				if {_msg::2} contains "~i@%loop-value-2%~":
+					replace "~i@%loop-value-2%~" in {_msg::2} with "%{int-%loop-value-2%}%"
+				if {_msg::4} contains "~i@%loop-value-2%~":
+					replace "~i@%loop-value-2%~" in {_msg::4} with "%{int-%loop-value-2%}%"
+		if {_msg::4} is not set:
+			give ({_giveparams::1} parsed as a player) ({_giveparams::2} parsed as a number) of ({_giveparams::3} parsed as an item) named colored "%{_msg::2}%"
+		else:
+			
+			give ({_giveparams::1} parsed as a player) ({_giveparams::2} parsed as a number) of ({_giveparams::3} parsed as an item) named colored "%{_msg::2}%" with lore colored "%{_msg::4}%"
+#VARIABLE FUNCTION		
+function variablefunction(line: text):
+	set {_message} to {_line}
+	if {_line} starts with "@":
+		replace "@" in {_message} with ""
+		if {_message} starts with "int.":
+			replace "int." in {_message} with ""
+			set {_intcomponents::*} to {_message} split at "="
+			add {_intcomponents::1} to {integers::*}
+			#broadcast {_message}
+			createint({_intcomponents::1},({_intcomponents::2} parsed as an integer))
+		if {_message} starts with "str.":
+			replace "str." in {_message} with ""
+			set {_strcomponents::*} to {_message} split at "="
+			add {_strcomponents::1} to {strings::*}
+			#broadcast {_message}
+			createstring({_strcomponents::1},{_strcomponents::2})
+	
+on left click:
+	read("left click","%player%","%clicked block%","")
+	if {TerminateEvent} = true:
+		cancel event
+		set {TerminateEvent} to false
+on join:
+	read("join","%player%","","")
+	if {TerminateEvent} = true:
+		set {TerminateEvent} to false
+on chat:
+	read("chat","%player%","%message%","")
+	if {TerminateEvent} = true:
+		cancel event
+		set {TerminateEvent} to false
+on right click:
+	read("right click","%player%","%clicked block%","")
+	if {TerminateEvent} = true:
+		cancel event
+		set {TerminateEvent} to false
+on death:
+	read("die","%victim%","%attacker%","")
+	if {TerminateEvent} = true:
+		set {TerminateEvent} to false
+on damage:
+	read("damage","%victim%","%attacker%","")
+	read("dmg","%victim%","%attacker%","")
+	if {TerminateEvent} = true:
+		cancel event
+		set {TerminateEvent} to false
+on command:
+	set {_list::*} to arguments
+	#broadcast {_list::*}
+	read("/","%player%",command,{_list::*})
+	if {cmd executed} = true:
+		cancel event
+		set {cmd executed} to false
